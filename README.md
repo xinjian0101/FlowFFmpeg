@@ -1,102 +1,111 @@
 # FlowFFmpeg
 
-将声明式 JSON 媒体工作流编译为可检查的 FFmpeg 参数数组。项目负责把裁剪、缩放、帧率、音量和编码等节点转换为明确命令，但默认不执行外部程序。
+FlowFFmpeg compiles declarative JSON media workflows into inspectable FFmpeg argument lists. It converts trim, scale, frame-rate, volume, and codec nodes into a deterministic command preview while keeping execution outside the compiler.
 
-> 当前定位：安全、可审查的命令生成层，而不是自动执行器或完整视频编辑器。
+> Status: safe command-generation layer, not a full editor and not an automatic process runner.
 
-## 适用场景
+## Use cases
 
-- 将前端或配置文件中的剪辑参数转换为 FFmpeg 命令
-- 在执行前审核输入、输出、滤镜和编码参数
-- 为批量导出系统提供稳定的工作流描述
-- 保存可复现的媒体处理配置
-- 将人工确认的高光区间交给下游执行层
+- Convert application settings into FFmpeg arguments
+- Review input, output, filter, timing, and codec choices before execution
+- Preserve reproducible media-processing configurations
+- Prepare batch-job manifests for a separate execution service
+- Pass approved highlight intervals into a controlled media pipeline
 
-## 当前能力
+## Current capabilities
 
-- 支持裁剪节点
-- 支持缩放节点
-- 支持帧率节点
-- 支持音量节点
-- 支持编码节点
-- 对未知节点立即报错
-- 以参数数组构建命令，避免依赖未经检查的整段 Shell 字符串
-- 默认只输出命令，不自动调用 FFmpeg
+- Trim nodes
+- Scale nodes
+- Frame-rate nodes
+- Volume nodes
+- Codec nodes
+- Immediate failure for unsupported node types
+- Argument-list construction instead of free-form shell strings
+- Command preview without automatic execution
 
-## 快速开始
+## Requirements
 
-### 环境
+- Python 3.10 or newer
+- FFmpeg is not required when only generating a preview
+- A local FFmpeg installation is required when a separate runner executes the result
 
-- Python 3.10 或更高版本
-- 仅生成命令时不要求系统已安装 FFmpeg
-- 真正执行前需另行安装并检查 FFmpeg 版本
-
-### 运行
+## Run
 
 ```bash
 python main.py examples/workflow.json
 ```
 
-### 测试
+## Test
 
 ```bash
 python tests.py
 ```
 
-## 工作流示例
+## Workflow example
 
 ```json
 {
   "input": "input.mp4",
   "output": "output.mp4",
-  "steps": [
+  "nodes": [
     {"type": "trim", "start": 12.0, "duration": 30.0},
     {"type": "scale", "width": 1080, "height": 1920},
     {"type": "fps", "value": 30},
     {"type": "volume", "value": 1.0},
-    {"type": "encode", "video_codec": "libx264", "audio_codec": "aac"}
+    {"type": "codec", "video": "libx264", "audio": "aac"}
   ]
 }
 ```
 
-具体字段应以仓库内已提交示例和当前代码为准。未来新增节点应保持显式 Schema、严格校验和向后兼容说明。
+Use the committed examples and schema as the source of truth. New nodes should include explicit validation, examples, compatibility notes, and tests.
 
-## 推荐执行流程
+## Recommended execution flow
 
-1. 由业务层生成 JSON 工作流。
-2. 使用 FlowFFmpeg 编译为参数数组。
-3. 审核输入路径、输出路径、覆盖策略和滤镜参数。
-4. 在受控执行层调用 FFmpeg。
-5. 记录 FFmpeg 版本、工作流文件和生成命令。
-6. 检查退出码、输出文件和媒体探测结果。
+1. Create a JSON workflow in the application layer.
+2. Compile it with FlowFFmpeg.
+3. Review paths, overwrite behavior, timing, filters, and codecs.
+4. Execute the argument list in a separate controlled runner.
+5. Record the FFmpeg version, workflow checksum, generated arguments, and result code.
+6. Verify the output file with a media probe.
 
-## 安全边界
+## Safety boundaries
 
-- 本项目默认不执行命令。
-- 不应把用户输入直接拼接为 Shell 字符串。
-- 输出路径必须由上层应用限制在允许目录内。
-- 执行层应设置超时、资源限制和日志留存。
-- 覆盖已有文件必须明确授权。
-- 网络协议输入、设备输入和复杂自定义滤镜应采用额外白名单。
+- The project does not execute commands by default.
+- Do not concatenate untrusted values into a shell string.
+- Restrict output paths in the execution layer.
+- Configure timeouts, resource limits, bounded retries, and logs outside the compiler.
+- Require explicit approval before overwriting files.
+- Apply additional allowlists before supporting network inputs, device inputs, or advanced custom filters.
 
-## 设计原则
+## Design principles
 
-- **声明式**：工作流描述目标，不暴露任意命令拼接。
-- **可审查**：生成结果在执行前可查看、记录和拒绝。
-- **确定性**：同一版本与同一输入应生成一致参数。
-- **严格失败**：未知节点和非法参数不静默忽略。
-- **职责分离**：编译、执行、监控和产物校验由不同层负责。
+- **Declarative**: workflows describe approved operations rather than arbitrary commands.
+- **Inspectable**: generated arguments can be reviewed and rejected.
+- **Deterministic**: the same version and input should produce the same argument order.
+- **Strict**: unsupported nodes fail instead of being ignored.
+- **Separated responsibilities**: compilation, execution, monitoring, and artifact validation remain independent.
 
-## 已知限制
+## Presets
 
-- 当前节点集合有限，不覆盖 FFmpeg 全部能力。
-- 不自动探测输入媒体信息。
-- 不自动执行、重试或管理并发任务。
-- 不负责字幕渲染、复杂滤镜图或硬件编码兼容判断。
-- 不保证生成命令适用于所有 FFmpeg 版本和操作系统。
+- `presets/vertical-short.json`
+- `presets/social-landscape.json`
+- `presets/audio-copy-review.json`
 
-## 文档
+Presets are starting points. Review dimensions, duration, codecs, and paths for each source.
 
+## Known limitations
+
+- The node set covers only a small part of FFmpeg.
+- The compiler does not probe source media automatically.
+- It does not manage processes, retries, queues, or parallel execution.
+- It does not yet support complex filter graphs or hardware-encoder compatibility checks.
+- Generated arguments may require platform-specific review.
+
+## Documentation
+
+- [Workflow Specification](docs/WORKFLOW_SPEC.md)
+- [Command Review Checklist](docs/SAFETY_CHECKLIST.md)
+- [Windows Guide](docs/WINDOWS_GUIDE.md)
 - [Security Model](docs/SECURITY_MODEL.md)
 - [Maintenance Trace](MAINTENANCE_TRACE.md)
 
