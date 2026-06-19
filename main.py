@@ -51,6 +51,15 @@ def validate_workflow(workflow: dict) -> None:
         elif node_type == "volume":
             if number(node.get("value", 1.0), "volume.value") < 0:
                 raise ValueError("volume.value must be non-negative")
+        elif node_type == "crop":
+            width = int(number(node.get("width"), "crop.width"))
+            height = int(number(node.get("height"), "crop.height"))
+            x = int(number(node.get("x", 0), "crop.x"))
+            y = int(number(node.get("y", 0), "crop.y"))
+            if width <= 0 or height <= 0:
+                raise ValueError("crop dimensions must be positive")
+            if x < 0 or y < 0:
+                raise ValueError("crop offsets must be non-negative")
         elif node_type == "codec":
             continue
         else:
@@ -79,6 +88,12 @@ def compile_workflow(workflow: dict) -> list[str]:
             video_filters.append(f"fps={float(node.get('value', 30)):g}")
         elif node_type == "volume":
             audio_filters.append(f"volume={float(node.get('value', 1.0)):g}")
+        elif node_type == "crop":
+            width = int(node["width"])
+            height = int(node["height"])
+            x = int(node.get("x", 0))
+            y = int(node.get("y", 0))
+            video_filters.append(f"crop={width}:{height}:{x}:{y}")
         elif node_type == "codec":
             output_options.extend(["-c:v", node.get("video", "libx264"), "-c:a", node.get("audio", "aac")])
 
