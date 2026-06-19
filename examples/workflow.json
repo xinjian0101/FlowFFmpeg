@@ -1,0 +1,10 @@
+{
+  "input": "input.mp4",
+  "output": "output.mp4",
+  "nodes": [
+    {"type": "trim", "start": 10, "duration": 30},
+    {"type": "scale", "width": -2, "height": 1080},
+    {"type": "fps", "value": 30},
+    {"type": "codec", "video": "libx264", "audio": "aac"}
+  ]
+}
