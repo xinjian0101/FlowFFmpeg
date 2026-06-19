@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FlowFFmpeg Batch Manifest",
+  "type": "object",
+  "required": ["manifest_version", "jobs"],
+  "properties": {
+    "manifest_version": {"type": "integer", "minimum": 1},
+    "name": {"type": "string"},
+    "jobs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "workflow"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "workflow": {"type": "string", "minLength": 1},
+          "enabled": {"type": "boolean", "default": true},
+          "tags": {"type": "array", "items": {"type": "string"}},
+          "retry_limit": {"type": "integer", "minimum": 0, "maximum": 5},
+          "depends_on": {"type": "array", "items": {"type": "string"}}
+        },
+        "additionalProperties": true
+      }
+    },
+    "execution": {
+      "type": "object",
+      "properties": {
+        "maximum_parallel_jobs": {"type": "integer", "minimum": 1},
+        "stop_on_failure": {"type": "boolean"},
+        "write_task_log": {"type": "boolean"}
+      }
+    }
+  },
+  "additionalProperties": true
+}
