@@ -1,0 +1,39 @@
+{
+  "preset_version": 1,
+  "name": "vertical-short-1080x1920",
+  "description": "Command-generation preset for vertical short-form video.",
+  "workflow": {
+    "input": "input.mp4",
+    "output": "output-vertical.mp4",
+    "nodes": [
+      {
+        "type": "trim",
+        "start": 0,
+        "duration": 60
+      },
+      {
+        "type": "scale",
+        "width": 1080,
+        "height": 1920
+      },
+      {
+        "type": "fps",
+        "value": 30
+      },
+      {
+        "type": "volume",
+        "value": 1.0
+      },
+      {
+        "type": "codec",
+        "video": "libx264",
+        "audio": "aac"
+      }
+    ]
+  },
+  "review_before_use": [
+    "The current scale node does not crop or pad automatically.",
+    "Confirm that source aspect ratio is appropriate.",
+    "Confirm output path before executing the generated command."
+  ]
+}
