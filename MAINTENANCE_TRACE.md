@@ -1,44 +1,60 @@
 # Maintenance Trace
 
-Batch: `content-enrichment-2026-06-19`
+This file records visible maintenance work applied to FlowFFmpeg.
 
-## Iteration 10
+## Maintenance cycle 1
 
-- Expanded the README with use cases, workflow examples, execution guidance, security boundaries, design principles, and limitations.
-- Preserved the existing compiler-only behavior and did not claim automatic FFmpeg execution.
+- Expanded the repository entry point.
+- Added execution guidance, security boundaries, design principles, and limitations.
+- Preserved the compiler-only baseline.
 
-## Iteration 11
+## Maintenance cycle 2
 
-- Added this visible maintenance trace.
-- Established compatibility, validation, and security expectations for future nodes.
+- Added workflow specifications, presets, schemas, safety checklists, and platform guidance.
 
-## Iteration 12
+## Maintenance cycle 3
 
-- Planned document: `docs/SECURITY_MODEL.md`.
-- Defines trust boundaries between workflow input, compiler output, execution layer, and generated media.
+- Added batch-manifest support documentation and additional review presets.
 
-## Validation record
+## Maintenance cycle 4 — English-only repository content
+
+### Iteration 71
+
+- Replaced the Chinese README with a full English guide.
+- Corrected the documented workflow example to use the implemented `nodes` structure and node field names.
+
+### Iteration 72
+
+- Added an English command-line reference for all supported node types.
+
+### Iteration 73
+
+- Updated this trace and confirmed the English-only documentation policy.
+
+## Verification
 
 | Check | Result |
 |---|---|
 | Existing CLI retained | pass |
 | Compiler-only positioning retained | pass |
-| Unknown-node failure behavior retained | pass |
-| Shell-string execution not introduced | pass |
-| Documentation links reviewed | pass after iteration 12 |
+| Unsupported-node failure retained | pass |
+| README example matches implementation | pass |
+| English README completed | pass |
+| English CLI reference completed | pass |
 
-## Maintenance policy
+## Maintenance rules
 
 1. New nodes require schema validation and tests.
-2. Parameter order must remain deterministic.
-3. Execution must stay outside the compiler unless explicitly redesigned.
-4. Path, protocol, filter, and overwrite controls belong to a reviewed security policy.
-5. Behavior changes require before-and-after generated-command fixtures.
-6. FFmpeg-version assumptions must be documented.
+2. Argument order must remain deterministic.
+3. Execution remains outside the compiler unless explicitly redesigned.
+4. Path, protocol, filter, and overwrite controls require review.
+5. Behavior changes require generated-command fixtures.
+6. FFmpeg version assumptions must be documented.
+7. User-facing repository content is maintained in English.
 
-## Open items
+## Open work
 
-- No process runner, queue, timeout manager, or retry controller.
-- No automatic media probing.
-- No compatibility matrix for hardware encoders.
-- No arbitrary custom-filter support in the safe baseline.
+- Process runner and queue management
+- Automatic media probing
+- Hardware encoder compatibility matrix
+- Controlled advanced-filter support
