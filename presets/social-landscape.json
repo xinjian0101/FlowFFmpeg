@@ -1,0 +1,22 @@
+{
+  "preset_version": 1,
+  "name": "social-landscape-1920x1080",
+  "description": "Command-generation preset for landscape social video.",
+  "workflow": {
+    "input": "input.mp4",
+    "output": "output-landscape.mp4",
+    "nodes": [
+      {"type": "trim", "start": 0, "duration": 180},
+      {"type": "scale", "width": 1920, "height": 1080},
+      {"type": "fps", "value": 30},
+      {"type": "volume", "value": 1.0},
+      {"type": "codec", "video": "libx264", "audio": "aac"}
+    ]
+  },
+  "review_before_use": [
+    "Confirm the source aspect ratio.",
+    "Confirm that direct scaling is acceptable.",
+    "Review the output path.",
+    "Review codec availability on the target machine."
+  ]
+}
