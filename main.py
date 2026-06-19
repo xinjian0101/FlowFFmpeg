@@ -3,8 +3,12 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import re
 import shlex
 from pathlib import Path
+
+
+COLOR_RE = re.compile(r"^[A-Za-z0-9_@.#]+$")
 
 
 def number(value: object, field: str) -> float:
@@ -14,6 +18,13 @@ def number(value: object, field: str) -> float:
         raise ValueError(f"{field} must be numeric") from exc
     if not math.isfinite(result):
         raise ValueError(f"{field} must be finite")
+    return result
+
+
+def positive_integer(value: object, field: str) -> int:
+    result = int(number(value, field))
+    if result <= 0:
+        raise ValueError(f"{field} must be positive")
     return result
 
 
@@ -28,6 +39,9 @@ def validate_workflow(workflow: dict) -> None:
         raise ValueError("workflow requires output")
     if Path(source) == Path(output):
         raise ValueError("input and output must be different")
+    overwrite = workflow.get("overwrite", True)
+    if not isinstance(overwrite, bool):
+        raise ValueError("overwrite must be a boolean")
     nodes = workflow.get("nodes", [])
     if not isinstance(nodes, list):
         raise ValueError("nodes must be a list")
@@ -52,14 +66,18 @@ def validate_workflow(workflow: dict) -> None:
             if number(node.get("value", 1.0), "volume.value") < 0:
                 raise ValueError("volume.value must be non-negative")
         elif node_type == "crop":
-            width = int(number(node.get("width"), "crop.width"))
-            height = int(number(node.get("height"), "crop.height"))
-            x = int(number(node.get("x", 0), "crop.x"))
-            y = int(number(node.get("y", 0), "crop.y"))
-            if width <= 0 or height <= 0:
-                raise ValueError("crop dimensions must be positive")
-            if x < 0 or y < 0:
+            positive_integer(node.get("width"), "crop.width")
+            positive_integer(node.get("height"), "crop.height")
+            if int(number(node.get("x", 0), "crop.x")) < 0 or int(number(node.get("y", 0), "crop.y")) < 0:
                 raise ValueError("crop offsets must be non-negative")
+        elif node_type == "pad":
+            positive_integer(node.get("width"), "pad.width")
+            positive_integer(node.get("height"), "pad.height")
+            if int(number(node.get("x", 0), "pad.x")) < 0 or int(number(node.get("y", 0), "pad.y")) < 0:
+                raise ValueError("pad offsets must be non-negative")
+            color = node.get("color", "black")
+            if not isinstance(color, str) or not COLOR_RE.fullmatch(color):
+                raise ValueError("pad.color contains unsupported characters")
         elif node_type == "codec":
             continue
         else:
@@ -94,10 +112,18 @@ def compile_workflow(workflow: dict) -> list[str]:
             x = int(node.get("x", 0))
             y = int(node.get("y", 0))
             video_filters.append(f"crop={width}:{height}:{x}:{y}")
+        elif node_type == "pad":
+            width = int(node["width"])
+            height = int(node["height"])
+            x = int(node.get("x", 0))
+            y = int(node.get("y", 0))
+            color = node.get("color", "black")
+            video_filters.append(f"pad={width}:{height}:{x}:{y}:{color}")
         elif node_type == "codec":
             output_options.extend(["-c:v", node.get("video", "libx264"), "-c:a", node.get("audio", "aac")])
 
-    command = ["ffmpeg", "-y", *input_options, "-i", source]
+    overwrite_flag = "-y" if workflow.get("overwrite", True) else "-n"
+    command = ["ffmpeg", overwrite_flag, *input_options, "-i", source]
     if video_filters:
         command.extend(["-vf", ",".join(video_filters)])
     if audio_filters:
