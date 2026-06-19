@@ -1,0 +1,18 @@
+{
+  "preset_version": 1,
+  "name": "audio-copy-review",
+  "description": "Reference preset for reviewing audio-related command output.",
+  "workflow": {
+    "input": "input.mp4",
+    "output": "output-audio-review.mp4",
+    "nodes": [
+      {"type": "volume", "value": 1.0},
+      {"type": "codec", "video": "libx264", "audio": "aac"}
+    ]
+  },
+  "notes": [
+    "The current MVP uses a simple volume multiplier.",
+    "Measure source audio before changing the value.",
+    "Review the generated command before use."
+  ]
+}
