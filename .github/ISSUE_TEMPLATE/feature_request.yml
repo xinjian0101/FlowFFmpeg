@@ -1,0 +1,69 @@
+name: Feature request
+description: Propose a workflow node, validation, preset, output, or integration improvement
+title: "[Feature]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe the media-workflow problem before proposing syntax. FlowFFmpeg must remain declarative, inspectable, and separate from process execution.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Feature area
+      options:
+        - New workflow node
+        - Node validation
+        - Filter composition
+        - Codec handling
+        - Preset
+        - Batch manifest
+        - Argument output
+        - Platform compatibility
+        - Runner integration contract
+        - Documentation
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: Describe the workflow that cannot be represented safely today.
+    validations:
+      required: true
+  - type: textarea
+    id: workflow
+    attributes:
+      label: Proposed workflow example
+      render: json
+    validations:
+      required: true
+  - type: textarea
+    id: arguments
+    attributes:
+      label: Expected argument-array behavior
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation and failure rules
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+    validations:
+      required: true
+  - type: checkboxes
+    id: boundaries
+    attributes:
+      label: Project-boundary checks
+      options:
+        - label: The proposal does not introduce free-form shell fragments.
+          required: true
+        - label: Process execution remains outside the compiler.
+          required: true
+        - label: Path, overwrite, and string validation were considered.
+          required: true
