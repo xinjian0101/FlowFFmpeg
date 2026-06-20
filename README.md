@@ -1,45 +1,77 @@
+<div align="center">
+
 # FlowFFmpeg
 
-FlowFFmpeg compiles declarative JSON media workflows into inspectable FFmpeg argument lists. It converts trim, scale, frame-rate, volume, and codec nodes into a deterministic command preview while keeping execution outside the compiler.
+**Declarative, inspectable FFmpeg command generation without automatic execution.**
 
-> Status: safe command-generation layer, not a full editor and not an automatic process runner.
+[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![License](https://img.shields.io/badge/License-MIT-2ea44f)](LICENSE)
+[![Mode](https://img.shields.io/badge/Mode-Compiler%20Only-6f42c1)](ABOUT.md)
+[![Status](https://img.shields.io/badge/Status-Active%20MVP-f59e0b)](MAINTENANCE_TRACE.md)
 
-## Use cases
+[Quick start](#quick-start) · [Nodes](#supported-nodes) · [Presets](#presets) · [Security](docs/SECURITY_MODEL.md) · [About](ABOUT.md)
 
-- Convert application settings into FFmpeg arguments
-- Review input, output, filter, timing, and codec choices before execution
-- Preserve reproducible media-processing configurations
-- Prepare batch-job manifests for a separate execution service
-- Pass approved highlight intervals into a controlled media pipeline
+</div>
 
-## Current capabilities
+---
 
-- Trim nodes
-- Scale nodes
-- Frame-rate nodes
-- Volume nodes
-- Codec nodes
-- Immediate failure for unsupported node types
-- Argument-list construction instead of free-form shell strings
-- Command preview without automatic execution
+FlowFFmpeg converts reviewed JSON workflows into deterministic FFmpeg argument arrays. It validates node parameters, preserves operation order, and keeps process execution outside the compiler so applications can inspect or reject commands before running them.
 
-## Requirements
+> [!IMPORTANT]
+> FlowFFmpeg does not execute FFmpeg. A separate runner must enforce path controls, protocol restrictions, timeouts, resource limits, logging, and overwrite policy.
 
-- Python 3.10 or newer
-- FFmpeg is not required when only generating a preview
-- A local FFmpeg installation is required when a separate runner executes the result
+## At a glance
 
-## Run
+| Area | Current support |
+|---|---|
+| Input | Declarative JSON workflow |
+| Nodes | Trim, crop, scale, pad, FPS, volume, codec |
+| Validation | Numeric, path, node, color, and overwrite checks |
+| Output | Shell-readable command or JSON argument array |
+| Presets | Vertical, landscape, and audio-review examples |
+| Runtime | Python standard library |
+
+## Quick start
 
 ```bash
 python main.py examples/workflow.json
 ```
 
-## Test
+Generate a JSON argument array for another process runner:
 
 ```bash
-python tests.py
+python main.py examples/workflow.json --format json
 ```
+
+Run tests:
+
+```bash
+python -m unittest -v
+```
+
+## Capability matrix
+
+| Capability | Status | Notes |
+|---|---:|---|
+| Deterministic argument order | ✅ | Stable compilation order |
+| Input/output path separation | ✅ | Same path is rejected |
+| Explicit overwrite policy | ✅ | Generates `-y` or `-n` |
+| Video filter composition | ✅ | Preserves node order |
+| JSON argument output | ✅ | Suitable for `subprocess` integration |
+| Media probing | ⏳ | Planned separate component |
+| Automatic command execution | ❌ | Intentionally outside scope |
+
+## Supported nodes
+
+| Node | Main fields | Generated behavior |
+|---|---|---|
+| `trim` | `start`, `duration` | Input seek and duration options |
+| `crop` | `width`, `height`, `x`, `y` | Video crop filter |
+| `scale` | `width`, `height` | Video scale filter |
+| `pad` | `width`, `height`, `x`, `y`, `color` | Canvas padding filter |
+| `fps` | `value` | Frame-rate filter |
+| `volume` | `value` | Audio volume filter |
+| `codec` | `video`, `audio` | Output codec options |
 
 ## Workflow example
 
@@ -47,9 +79,12 @@ python tests.py
 {
   "input": "input.mp4",
   "output": "output.mp4",
+  "overwrite": false,
   "nodes": [
-    {"type": "trim", "start": 12.0, "duration": 30.0},
-    {"type": "scale", "width": 1080, "height": 1920},
+    {"type": "trim", "start": 12, "duration": 30},
+    {"type": "crop", "width": 1080, "height": 1080, "x": 100, "y": 0},
+    {"type": "scale", "width": 720, "height": 720},
+    {"type": "pad", "width": 1080, "height": 1920, "x": 180, "y": 600, "color": "black"},
     {"type": "fps", "value": 30},
     {"type": "volume", "value": 1.0},
     {"type": "codec", "video": "libx264", "audio": "aac"}
@@ -57,57 +92,64 @@ python tests.py
 }
 ```
 
-Use the committed examples and schema as the source of truth. New nodes should include explicit validation, examples, compatibility notes, and tests.
+## Recommended integration
 
-## Recommended execution flow
-
-1. Create a JSON workflow in the application layer.
-2. Compile it with FlowFFmpeg.
-3. Review paths, overwrite behavior, timing, filters, and codecs.
-4. Execute the argument list in a separate controlled runner.
-5. Record the FFmpeg version, workflow checksum, generated arguments, and result code.
-6. Verify the output file with a media probe.
-
-## Safety boundaries
-
-- The project does not execute commands by default.
-- Do not concatenate untrusted values into a shell string.
-- Restrict output paths in the execution layer.
-- Configure timeouts, resource limits, bounded retries, and logs outside the compiler.
-- Require explicit approval before overwriting files.
-- Apply additional allowlists before supporting network inputs, device inputs, or advanced custom filters.
-
-## Design principles
-
-- **Declarative**: workflows describe approved operations rather than arbitrary commands.
-- **Inspectable**: generated arguments can be reviewed and rejected.
-- **Deterministic**: the same version and input should produce the same argument order.
-- **Strict**: unsupported nodes fail instead of being ignored.
-- **Separated responsibilities**: compilation, execution, monitoring, and artifact validation remain independent.
+```text
+application settings
+      ↓
+JSON workflow
+      ↓
+FlowFFmpeg validation
+      ↓
+argument-array compilation
+      ↓
+human or policy review
+      ↓
+separate controlled runner
+      ↓
+media probe and artifact verification
+```
 
 ## Presets
 
-- `presets/vertical-short.json`
-- `presets/social-landscape.json`
-- `presets/audio-copy-review.json`
+| Preset | Purpose |
+|---|---|
+| `presets/vertical-short.json` | Vertical short-form output |
+| `presets/social-landscape.json` | Landscape social output |
+| `presets/audio-copy-review.json` | Conservative audio review |
 
-Presets are starting points. Review dimensions, duration, codecs, and paths for each source.
+Presets are starting points. Review paths, dimensions, codecs, duration, and encoder availability before execution.
 
-## Known limitations
+## Repository map
 
-- The node set covers only a small part of FFmpeg.
-- The compiler does not probe source media automatically.
-- It does not manage processes, retries, queues, or parallel execution.
-- It does not yet support complex filter graphs or hardware-encoder compatibility checks.
-- Generated arguments may require platform-specific review.
+| Path | Purpose |
+|---|---|
+| `main.py` | Workflow validation and compilation |
+| `schema/` | Workflow and batch-manifest contracts |
+| `presets/` | Reviewable workflow examples |
+| `examples/` | Minimal runnable workflow |
+| `docs/` | Specification, safety, Windows, and security guidance |
+| `test_*.py` | Validation, ordering, crop, pad, and overwrite tests |
+| `ABOUT.md` | Mission, maturity, boundaries, and governance |
+
+## Safety boundaries
+
+- No free-form shell fragments
+- No automatic process execution
+- No network or device input support
+- No hidden overwrite behavior
+- No assumption that every FFmpeg build supports every encoder
 
 ## Documentation
 
-- [Workflow Specification](docs/WORKFLOW_SPEC.md)
-- [Command Review Checklist](docs/SAFETY_CHECKLIST.md)
-- [Windows Guide](docs/WINDOWS_GUIDE.md)
-- [Security Model](docs/SECURITY_MODEL.md)
-- [Maintenance Trace](MAINTENANCE_TRACE.md)
+- [About the project](ABOUT.md)
+- [Workflow specification](docs/WORKFLOW_SPEC.md)
+- [Command review checklist](docs/SAFETY_CHECKLIST.md)
+- [Windows guide](docs/WINDOWS_GUIDE.md)
+- [Security model](docs/SECURITY_MODEL.md)
+- [CLI reference](docs/CLI_REFERENCE.md)
+- [Maintenance trace](MAINTENANCE_TRACE.md)
+- [Changelog](CHANGELOG.md)
 
 ## License
 
