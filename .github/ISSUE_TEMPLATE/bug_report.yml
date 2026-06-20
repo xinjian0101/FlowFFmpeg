@@ -1,0 +1,68 @@
+name: Bug report
+description: Report a reproducible workflow validation or argument-generation defect
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Share workflow JSON and generated arguments only. Remove private paths and media names.
+  - type: input
+    id: version
+    attributes:
+      label: Commit or version
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      options:
+        - Workflow validation
+        - Trim node
+        - Crop node
+        - Scale node
+        - Pad node
+        - FPS node
+        - Volume node
+        - Codec node
+        - Overwrite handling
+        - Shell display
+        - JSON argument output
+    validations:
+      required: true
+  - type: textarea
+    id: workflow
+    attributes:
+      label: Minimal workflow
+      render: json
+    validations:
+      required: true
+  - type: textarea
+    id: generated
+    attributes:
+      label: Generated arguments or error
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected arguments or validation result
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: OS, Python version, and FFmpeg version when relevant
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-submission checks
+      options:
+        - label: I removed private paths, credentials, and media identifiers.
+          required: true
+        - label: I confirmed the workflow does not rely on unsupported free-form shell input.
+          required: true
