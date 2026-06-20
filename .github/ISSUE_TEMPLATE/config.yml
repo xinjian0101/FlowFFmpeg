@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Project overview
+    url: https://github.com/xinjian0101/FlowFFmpeg/blob/main/ABOUT.md
+    about: Review compiler boundaries, supported nodes, architecture, and governance.
+  - name: Workflow and security guides
+    url: https://github.com/xinjian0101/FlowFFmpeg/tree/main/docs
+    about: Read workflow, safety, Windows, security, and CLI documentation.
