@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "If you use FlowFFmpeg, cite this repository and the exact commit used."
+title: "FlowFFmpeg"
+type: software
+authors:
+  - name: "xinjian0101"
+repository-code: "https://github.com/xinjian0101/FlowFFmpeg"
+url: "https://github.com/xinjian0101/FlowFFmpeg/blob/main/ABOUT.md"
+license: MIT
+keywords:
+  - FFmpeg
+  - media workflow
+  - command generation
+  - video processing
+  - local-first
+abstract: "A declarative compiler that validates media workflows and produces deterministic FFmpeg argument arrays without executing external processes."
